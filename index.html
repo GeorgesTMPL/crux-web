@@ -56,7 +56,8 @@
     text-align:center;color:var(--dim);font-size:12.5px;line-height:1.6;
     padding:0 10px;
   }
-  .state{text-align:center;color:var(--dim);padding:60px 0;font-size:15px}
+  .state{text-align:center;color:var(--dim);padding:60px 0;font-size:15px;line-height:1.6}
+  .state small{display:block;margin-top:10px;font-size:11px;color:#5a6288;word-break:break-all}
   footer{position:relative;z-index:1;margin-top:auto;padding-top:26px;text-align:center;color:var(--dim);font-size:11px;line-height:1.6}
 </style>
 </head>
@@ -95,7 +96,6 @@
 const SUPABASE_URL = 'https://ihmifbhimaoeoercqpgg.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobWlmYmhpbWFvZW9lcmNxcGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzAyMjgsImV4cCI6MjA5OTcwNjIyOH0.AuGHcAVjubKrgvRaD9vNQwxN3mapDvl0ip6WdkNKYvM';
 
-// twinkling background
 const cv = document.getElementById('stars');
 function drawStars(){
   cv.width = innerWidth; cv.height = innerHeight;
@@ -109,7 +109,7 @@ function drawStars(){
 }
 drawStars(); addEventListener('resize', drawStars);
 
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML}
 function tagify(s){return esc(s).replace(/#[A-Za-z0-9_]+/g, m=>`<span class="tag">${m}</span>`)}
 function ago(iso){
   const d=(Date.now()-new Date(iso))/1000;
@@ -118,18 +118,32 @@ function ago(iso){
   return Math.round(d/86400)+'d ago';
 }
 
+async function api(path){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`,
+    { headers: { apikey: ANON_KEY, Authorization: 'Bearer '+ANON_KEY } });
+  const body = await r.text();
+  if(!r.ok) throw new Error(`HTTP ${r.status}: ${body}`);
+  return JSON.parse(body);
+}
+
 async function load(){
   const el = document.getElementById('content');
   const id = new URLSearchParams(location.search).get('p');
   if(!id){ el.innerHTML='<div class="state">No star specified — this link seems incomplete.</div>'; return; }
   try{
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/posts?id=eq.${encodeURIComponent(id)}&select=*,users(handle,avatar,avatar_url,is_bot)`,
-      { headers: { apikey: ANON_KEY, Authorization: 'Bearer '+ANON_KEY } }
-    );
-    const rows = await r.json();
-    if(!rows.length){ el.innerHTML='<div class="state">This star isn\'t in the sky anymore.</div>'; return; }
-    const p = rows[0], u = p.users || {};
+    // two simple queries, no embed — robust against relationship/permission quirks
+    const posts = await api(`posts?id=eq.${encodeURIComponent(id)}&select=*`);
+    if(!posts.length){
+      el.innerHTML=`<div class="state">This star isn't in the sky anymore.<small>id: ${esc(id)}</small></div>`;
+      return;
+    }
+    const p = posts[0];
+    let u = {};
+    try {
+      const us = await api(`users?id=eq.${encodeURIComponent(p.user_id)}&select=handle,avatar,avatar_url,is_bot`);
+      if(us.length) u = us[0];
+    } catch(_) { /* author lookup optional */ }
+
     let media = '';
     if (p.image_url && p.is_video) media = `<video class="media" controls playsinline src="${esc(p.image_url)}"></video>`;
     else if (p.image_url) media = `<img class="media" src="${esc(p.image_url)}" alt="">`;
@@ -149,7 +163,7 @@ async function load(){
       </div>`;
     document.title = `${u.handle||'A creator'} on Crux`;
   }catch(e){
-    el.innerHTML='<div class="state">The sky is unreachable right now — try again in a moment.</div>';
+    el.innerHTML=`<div class="state">The sky hiccuped fetching this one.<small>${esc(e.message)}</small></div>`;
   }
 }
 load();
