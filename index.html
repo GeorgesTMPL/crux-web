@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crux — a star from the sky</title>
+<meta property="og:title" content="A star on Crux">
+<meta property="og:description" content="Someone made something on Crux — the network that makes the internet fun again. No ads, no tracking, no algorithm.">
+<meta property="og:type" content="article">
+<style>
+  :root{
+    --bg:#0B1026; --card:#1A2246; --card2:#212B57; --ink:#E8ECFF;
+    --dim:#8B93B8; --gold:#E7B34C; --teal:#5AD4C8; --line:#2A3466;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:20px 14px 40px;
+    position:relative; overflow-x:hidden;
+  }
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .wrap{position:relative;z-index:1;width:100%;max-width:520px}
+  header{display:flex;align-items:center;justify-content:center;gap:12px;padding:18px 0 6px}
+  .logo{font-weight:800;letter-spacing:.14em;font-size:26px}
+  .logo b{color:var(--gold)}
+  .tagline{text-align:center;color:var(--dim);font-style:italic;font-size:13px;margin-bottom:22px}
+  .kite{width:34px;height:34px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:18px; margin-bottom:16px;
+  }
+  .head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .av{width:44px;height:44px;border-radius:50%;background:var(--card2);
+      display:flex;align-items:center;justify-content:center;font-size:22px;
+      border:2px solid var(--gold);overflow:hidden;flex-shrink:0}
+  .av img{width:100%;height:100%;object-fit:cover}
+  .name{font-weight:700;font-size:16px}
+  .sub{font-size:12px;color:var(--dim)}
+  .remixtag{
+    display:inline-block;font-size:12px;color:var(--teal);
+    background:rgba(90,212,200,.1);border:1px solid rgba(90,212,200,.3);
+    border-radius:8px;padding:3px 9px;margin-bottom:10px;
+  }
+  .text{font-size:16px;line-height:1.55;white-space:pre-wrap;word-wrap:break-word}
+  .text .tag{color:var(--teal);font-weight:700}
+  .media{width:100%;border-radius:12px;margin-top:12px;display:block}
+  video.media{background:#000}
+  .meta{margin-top:14px;color:var(--gold);font-size:13px;font-weight:700}
+  .cta{
+    display:block;text-align:center;background:var(--gold);color:#1A1300;
+    font-weight:800;font-size:16px;border-radius:14px;padding:15px;
+    text-decoration:none;margin-bottom:10px;
+  }
+  .invite{
+    text-align:center;color:var(--dim);font-size:12.5px;line-height:1.6;
+    padding:0 10px;
+  }
+  .state{text-align:center;color:var(--dim);padding:60px 0;font-size:15px}
+  footer{position:relative;z-index:1;margin-top:auto;padding-top:26px;text-align:center;color:var(--dim);font-size:11px;line-height:1.6}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="wrap">
+  <header>
+    <svg class="kite" viewBox="0 0 120 120">
+      <line x1="60" y1="18" x2="52" y2="100" stroke="#6E5937" stroke-width="2"/>
+      <line x1="24" y1="52" x2="90" y2="44" stroke="#6E5937" stroke-width="2"/>
+      <path d="M60 11 L61.8 16.2 L67 18 L61.8 19.8 L60 25 L58.2 19.8 L53 18 L58.2 16.2 Z" fill="#FFF3D6"/>
+      <path d="M52 91 L54.4 97.6 L61 100 L54.4 102.4 L52 109 L49.6 102.4 L43 100 L49.6 97.6 Z" fill="#FFF3D6"/>
+      <path d="M24 45 L26 50 L31 52 L26 54 L24 59 L22 54 L17 52 L22 50 Z" fill="#FFF3D6"/>
+      <path d="M90 38 L91.7 42.3 L96 44 L91.7 45.7 L90 50 L88.3 45.7 L84 44 L88.3 42.3 Z" fill="#FFF3D6"/>
+      <circle cx="72" cy="68" r="3" fill="#5AD4C8"/>
+    </svg>
+    <div class="logo">CRU<b>X</b></div>
+  </header>
+  <div class="tagline">Make the internet fun again.</div>
+
+  <div id="content"><div class="state">Fetching this star from the sky…</div></div>
+
+  <a class="cta" href="#invite">Get Crux ✦</a>
+  <div class="invite" id="invite">
+    Crux is in <b>invite-only pre-beta</b> — a small sky, growing on purpose.<br>
+    No ads. No tracking. No algorithm deciding what you see.<br>
+    Know someone inside? Ask them for an invite code.
+  </div>
+</div>
+<footer>
+  Shared from the Sky · posts on Crux are made by verified humans<br>
+  (drones are always labeled — it's the law up here)
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://ihmifbhimaoeoercqpgg.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobWlmYmhpbWFvZW9lcmNxcGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzAyMjgsImV4cCI6MjA5OTcwNjIyOH0.AuGHcAVjubKrgvRaD9vNQwxN3mapDvl0ip6WdkNKYvM';
+
+// twinkling background
+const cv = document.getElementById('stars');
+function drawStars(){
+  cv.width = innerWidth; cv.height = innerHeight;
+  const c = cv.getContext('2d');
+  c.clearRect(0,0,cv.width,cv.height);
+  for (let i=0;i<90;i++){
+    const x=Math.random()*cv.width, y=Math.random()*cv.height;
+    c.beginPath(); c.arc(x,y,Math.random()*1.4+.3,0,7);
+    c.fillStyle=`rgba(232,236,255,${Math.random()*.5+.1})`; c.fill();
+  }
+}
+drawStars(); addEventListener('resize', drawStars);
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function tagify(s){return esc(s).replace(/#[A-Za-z0-9_]+/g, m=>`<span class="tag">${m}</span>`)}
+function ago(iso){
+  const d=(Date.now()-new Date(iso))/1000;
+  if(d<3600)return Math.max(1,Math.round(d/60))+'m ago';
+  if(d<86400)return Math.round(d/3600)+'h ago';
+  return Math.round(d/86400)+'d ago';
+}
+
+async function load(){
+  const el = document.getElementById('content');
+  const id = new URLSearchParams(location.search).get('p');
+  if(!id){ el.innerHTML='<div class="state">No star specified — this link seems incomplete.</div>'; return; }
+  try{
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/posts?id=eq.${encodeURIComponent(id)}&select=*,users(handle,avatar,avatar_url,is_bot)`,
+      { headers: { apikey: ANON_KEY, Authorization: 'Bearer '+ANON_KEY } }
+    );
+    const rows = await r.json();
+    if(!rows.length){ el.innerHTML='<div class="state">This star isn\'t in the sky anymore.</div>'; return; }
+    const p = rows[0], u = p.users || {};
+    let media = '';
+    if (p.image_url && p.is_video) media = `<video class="media" controls playsinline src="${esc(p.image_url)}"></video>`;
+    else if (p.image_url) media = `<img class="media" src="${esc(p.image_url)}" alt="">`;
+    el.innerHTML = `
+      <div class="card">
+        <div class="head">
+          <div class="av">${u.avatar_url?`<img src="${esc(u.avatar_url)}">`:esc(u.avatar||'⭐')}</div>
+          <div>
+            <div class="name">${esc(u.handle||'someone')}${u.is_bot?' <span style="font-size:11px;color:var(--dim)">⚙ Golden Legion</span>':''}</div>
+            <div class="sub">${ago(p.created_at)} · on Crux</div>
+          </div>
+        </div>
+        ${p.remix_of?'<div class="remixtag">🌀 a remix — creation begetting creation</div>':''}
+        <div class="text">${tagify(p.text||'')}</div>
+        ${media}
+        <div class="meta">✦ ${p.sparks||0} sparks</div>
+      </div>`;
+    document.title = `${u.handle||'A creator'} on Crux`;
+  }catch(e){
+    el.innerHTML='<div class="state">The sky is unreachable right now — try again in a moment.</div>';
+  }
+}
+load();
+</script>
+</body>
+</html>
